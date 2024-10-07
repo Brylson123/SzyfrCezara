@@ -1,101 +1,159 @@
-import Image from "next/image";
+'use client';
+
+import {ChangeEvent, useState} from 'react';
+
+
+const polishAlphabet: string = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż';
+
+
+function cleanText(text: string): string {
+
+    return text
+        .toLowerCase()
+        .replace(/[^aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż]/g, '');
+}
+
+
+function caesarCipher(text: string, shift: number): string {
+    return text
+        .split('')
+        .map((char) => {
+            const index = polishAlphabet.indexOf(char);
+            if (index === -1) return '';
+            const newIndex = (index + shift + polishAlphabet.length) % polishAlphabet.length;
+            return polishAlphabet[newIndex];
+        })
+        .join('');
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    const [inputTextEncrypt, setInputTextEncrypt] = useState<string>('');
+    const [inputTextDecrypt, setInputTextDecrypt] = useState<string>('');
+    const [shiftEncrypt, setShiftEncrypt] = useState<number>(1);
+    const [shiftDecrypt, setShiftDecrypt] = useState<number>(1);
+    const [outputTextEncrypt, setOutputTextEncrypt] = useState<string>('');
+    const [outputTextDecrypt, setOutputTextDecrypt] = useState<string>('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    const handleEncrypt = (): void => {
+        const cleanedText = cleanText(inputTextEncrypt);
+        const encryptedText = caesarCipher(cleanedText, shiftEncrypt);
+        setOutputTextEncrypt(encryptedText);
+    };
+
+    const handleDecrypt = (): void => {
+        const cleanedText = cleanText(inputTextDecrypt);
+        const decryptedText = caesarCipher(cleanedText, -shiftDecrypt);
+        setOutputTextDecrypt(decryptedText);
+    };
+
+    const handleEncryptInputChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
+
+        setInputTextEncrypt(e.target.value);
+
+    };
+
+    const handleDecryptInputChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
+        setInputTextDecrypt(e.target.value);
+    };
+
+    const handleEncryptShiftChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const value = Math.max(1, Math.min(34, parseInt(e.target.value)));
+        setShiftEncrypt(value);
+    };
+
+    const handleDecryptShiftChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const value = Math.max(1, Math.min(34, parseInt(e.target.value)));
+        setShiftDecrypt(value);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mb-8">
+                <h1 className="text-2xl font-bold text-center mb-4">Szyfrowanie - Szyfr Cezara</h1>
+                <div className="mb-4">
+                    <label htmlFor="inputTextEncrypt" className="block text-sm font-medium text-gray-700">
+                        Tekst do zaszyfrowania:
+                    </label>
+                    <textarea
+                        id="inputTextEncrypt"
+                        rows={4}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        value={inputTextEncrypt}
+                        onChange={handleEncryptInputChange}
+                    />
+                </div>
+
+                <div className="mb-4">
+                    <label htmlFor="shiftEncrypt" className="block text-sm font-medium text-gray-700">
+                        Przesunięcie:
+                    </label>
+                    <input
+                        id="shiftEncrypt"
+                        type="number"
+                        min={1}
+                        max={34}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        value={shiftEncrypt}
+                        onChange={handleEncryptShiftChange}
+                    />
+                </div>
+                <div className="flex justify-center mb-4">
+                    <button
+                        onClick={handleEncrypt}
+                        className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors"
+                    >
+                        Zaszyfruj
+                    </button>
+                </div>
+
+                <div>
+                    <h2 className="text-lg font-medium mb-2">Wynik:</h2>
+                    <p className="bg-gray-100 p-4 rounded-md">{outputTextEncrypt}</p>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+                <h1 className="text-2xl font-bold text-center mb-4">Odszyfrowanie - Szyfr Cezara</h1>
+                <div className="mb-4">
+                    <label htmlFor="inputTextDecrypt" className="block text-sm font-medium text-gray-700">
+                        Tekst do odszyfrowania:
+                    </label>
+                    <textarea
+                        id="inputTextDecrypt"
+                        rows={4}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        value={inputTextDecrypt}
+                        onChange={handleDecryptInputChange}
+                    />
+                </div>
+                <div className="mb-4">
+                    <label htmlFor="shiftDecrypt" className="block text-sm font-medium text-gray-700">
+                        Przesunięcie:
+                    </label>
+                    <input
+                        id="shiftDecrypt"
+                        type="number"
+                        min={1}
+                        max={34}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        value={shiftDecrypt}
+                        onChange={handleDecryptShiftChange}
+                    />
+                </div>
+
+                <div className="flex justify-center mb-4">
+                    <button
+                        onClick={handleDecrypt}
+                        className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors"
+                    >
+                        Odszyfruj
+                    </button>
+                </div>
+                <div>
+                    <h2 className="text-lg font-medium mb-2">Wynik:</h2>
+                    <p className="bg-gray-100 p-4 rounded-md">{outputTextDecrypt}</p>
+                </div>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
